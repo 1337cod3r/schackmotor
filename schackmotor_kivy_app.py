@@ -2,7 +2,6 @@ import chess
 import copy
 from chess import *
 
-
 def sort_moves(pos):
 	pos_eval = evl(pos)
 	move_list = []
@@ -46,19 +45,19 @@ def minimax(pos, alpha, beta, maxi, depth, prev_move):
 	if depth == 0 or pos.is_checkmate():
 		if pos.is_checkmate() and pos.fen().split(" ")[1] == "w":
 			return -99999999999999999999, str(prev_move)
-		elif pos.is_checkmate() and pos.fen().split(" ")[1] == "b":
+		if pos.is_checkmate() and pos.fen().split(" ")[1] == "b":
 			return 99999999999999999999, str(prev_move)
 		return evl(pos), prev_move
  
 	if maxi:
 		max_eval = -99999999999999999999
-		# best_move = ""
-		# next_best_move = ""
+		best_move = None
+		next_best_move = None
 		for i in sort_moves(pos):
 			board = copy.copy(pos)
 			board.push_uci(str(i))
 			eval, next_move = minimax(board, alpha, beta, 0, depth - 1, str(i))
-			if eval > max_eval:
+			if eval >= max_eval:
 				next_best_move = next_move
 				best_move = str(i)
 			max_eval = max(max_eval, eval)
@@ -69,13 +68,13 @@ def minimax(pos, alpha, beta, maxi, depth, prev_move):
  
 	else:
 		min_eval = 99999999999999999999
-		# best_move = ""
-		# next_best_move = ""
+		best_move = None
+		next_best_move = None
 		for i in sort_moves(pos):
 			board = copy.copy(pos)
 			board.push_uci(str(i))
 			eval, next_move = minimax(board, alpha, beta, 1, depth - 1, str(i))
-			if eval < min_eval:
+			if eval <= min_eval:
 				next_best_move = next_move
 				best_move = str(i)
 			min_eval = min(min_eval, eval)
@@ -145,20 +144,19 @@ from kivy.uix.slider import Slider
 from kivy import *
 
 
-class AgeCalculator(App):
+class engineApp(App):
 	def build(self):
 		self.window = GridLayout()
 		self.window.cols = 1
-		self.moveRequest = Label(text = "Enter your move")
+		self.moveRequest = Label(text = "Skriv in ditt drag")
 		self.window.add_widget(self.moveRequest)
 		self.move = TextInput(multiline=False)
 		self.window.add_widget(self.move)
-		self.button = Button(text = "Calculate FEN")
-		self.button.bind(on_press = self.getMove)
+		self.button = Button(text = "Beräkna bästa fortsättning")
+		self.button.bind(on_press = self.get_move)
 		self.window.add_widget(self.button)
 		self.depthControl = Slider(min = 0, max = 50)
 		self.window.add_widget(Label(text ="schackmotorns djup"))
-		self.window.add_widget(Label(text ='Slider Value'))
 		self.depthValue = Label(text ='0')
 		self.window.add_widget(self.depthValue)
 		self.window.add_widget(self.depthControl)
@@ -170,7 +168,7 @@ class AgeCalculator(App):
 		self.depthValue.text = "% d"% depth
 		self.depth = int(self.depthValue.text)
 
-	def getMove(self, event):
+	def get_move(self, event):
 		board = chess.Board()
 		game = chess_engine(board, self.depth)
 		inputt = self.move.text
@@ -178,4 +176,4 @@ class AgeCalculator(App):
 
 
 if __name__ == "__main__":
-	AgeCalculator().run()
+	engineApp().run()
